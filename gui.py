@@ -6,9 +6,13 @@ import threading
 
 class MyFrame(wx.Frame):
     def __init__(self, parent, title):
-        super(MyFrame, self).__init__(parent, title=title, size=(400, 400))
-        
+        super(MyFrame, self).__init__(parent, title=title, size=(400, 550))
+
         self.panel = wx.Panel(self)
+        
+        self.image = wx.Image('logo.png', wx.BITMAP_TYPE_PNG)
+        self.bitmap = wx.StaticBitmap(self.panel, -1, wx.Bitmap(self.image))
+
         self.file_label = wx.StaticText(self.panel, label="Select File Path:")
         self.folder_label = wx.StaticText(self.panel, label="Select Output Folder:")
         
@@ -21,14 +25,15 @@ class MyFrame(wx.Frame):
         self.folder_button = wx.Button(self.panel, label="Browse")
         self.Bind(wx.EVT_BUTTON, self.on_select_folder, self.folder_button)
         
-        options = ["Voice", "Instruments"]
-        self.option_label = wx.StaticText(self.panel, label="Choose Voice or Instruments:")
+        options = ["Vocals / accompaniment separation (2 stems)", "Vocals / drums / bass / other separation (4 stems)", "Vocals / drums / bass / piano / other separation (5 stems)"]
+        self.option_label = wx.StaticText(self.panel, label="Choose the separation mode:")
         self.option_choice = wx.Choice(self.panel, choices=options)
         
         self.split_button = wx.Button(self.panel, label="Split")
         self.Bind(wx.EVT_BUTTON, self.on_split, self.split_button)
         
         self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.bitmap, 0, wx.ALIGN_CENTER, 10)
         self.sizer.Add(self.file_label, 0, wx.ALL, 10)
         self.sizer.Add(self.file_text, 0, wx.EXPAND | wx.ALL, 10)
         self.sizer.Add(self.file_button, 0, wx.ALL, 10)
@@ -61,7 +66,9 @@ class MyFrame(wx.Frame):
         folder_path = self.folder_text.GetValue()
         option = self.option_choice.GetStringSelection()
         if file_path and folder_path and option:
-            option_spleeter = '2stems' if option == 'Voice' else '5stems'
+            if option == 'Vocals / accompaniment separation (2 stems)': option_spleeter = '2stems'   
+            elif option == 'Vocals / drums / bass / other separation (4 stems)': option_spleeter = '4stems'
+            else: option_spleeter = '5stems'
             threading.Thread(target=self.split_audio, args=(file_path, folder_path, option_spleeter)).start()
 
     def split_audio(self, file_path, folder_path, option_spleeter):
@@ -75,6 +82,6 @@ class MyFrame(wx.Frame):
 if __name__ == "__main__":
     app = wx.App(False)
     frame = MyFrame(None, "Spleeter GUI")
-    frame.SetBackgroundColour('#272822')
+    frame.SetBackgroundColour('grey')
     frame.Show()
     app.MainLoop()
